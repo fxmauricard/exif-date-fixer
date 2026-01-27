@@ -63,7 +63,6 @@ namespace ExifDateFixer
             Console.WriteLine("EXIF Date Fixer - Scanning: " + absolutePath);
             Console.WriteLine($"Recursive: {(recursive ? "Yes" : "No")}");
             Console.WriteLine($"Supported extensions: {string.Join(", ", supportedExtensions)}");
-            // Test comment for validation
             Console.WriteLine();
 
             // Find all supported files
