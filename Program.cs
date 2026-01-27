@@ -3,12 +3,21 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ExifDateFixer
 {
     class Program
     {
+        private static string GetVersion()
+        {
+            var version = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion ?? "1.0.0";
+            return version;
+        }
+
         static async Task<int> Main(string[] args)
         {
             // Define command-line options
@@ -60,7 +69,7 @@ namespace ExifDateFixer
             var absolutePath = Path.GetFullPath(path);
 
             // Display header
-            Console.WriteLine("EXIF Date Fixer - Scanning: " + absolutePath);
+            Console.WriteLine($"EXIF Date Fixer v{GetVersion()} - Scanning: " + absolutePath);
             Console.WriteLine($"Recursive: {(recursive ? "Yes" : "No")}");
             Console.WriteLine($"Supported extensions: {string.Join(", ", supportedExtensions)}");
             Console.WriteLine();
