@@ -141,8 +141,52 @@ public class MyCustomDateParser : IFilenameDateParser
 ## Dependencies
 
 - **System.CommandLine** (2.0.0-beta4.22272.1): Command-line argument parsing
-- **MetadataExtractor** (2.8.1): Reading EXIF metadata
+- **MetadataExtractor** (2.9.0): Reading EXIF metadata
 - **ExifLibNet** (2.1.4): Writing EXIF metadata
+
+## Development
+
+### Building the Project
+
+```bash
+# Build the solution
+dotnet build
+
+# Build in Release mode
+dotnet build -c Release
+```
+
+### Running Tests
+
+The project includes comprehensive unit tests for all parsers and the ExifService.
+
+```bash
+# Run all tests
+dotnet test
+
+# Run tests with detailed output
+dotnet test --verbosity normal
+
+# Run tests for a specific project
+dotnet test ExifDateFixer.Tests/ExifDateFixer.Tests.csproj
+```
+
+#### Test Coverage
+
+The test suite includes:
+
+- **Parser Tests**: Validate all filename date parsers (WhatsApp, Samsung, Windows Phone)
+  - Valid format parsing
+  - Invalid format handling
+  - Edge cases (invalid dates, malformed filenames)
+  - Case sensitivity
+  
+- **ExifService Tests**: Validate EXIF metadata operations
+  - Reading EXIF dates from images
+  - Writing EXIF dates to images
+  - Error handling for invalid/missing files
+
+All tests use xUnit framework and are located in the `ExifDateFixer.Tests` project.
 
 ## Technical Details
 
