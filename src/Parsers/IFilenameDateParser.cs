@@ -1,6 +1,6 @@
 using System;
 
-namespace ExifDateFixer
+namespace ExifDateFixer.Parsers
 {
     /// <summary>
     /// Interface for parsing dates from filenames

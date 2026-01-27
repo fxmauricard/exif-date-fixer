@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ExifDateFixer.Parsers;
+using ExifDateFixer.Services;
 
 namespace ExifDateFixer
 {

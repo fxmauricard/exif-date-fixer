@@ -2,18 +2,18 @@ using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace ExifDateFixer
+namespace ExifDateFixer.Parsers
 {
     /// <summary>
-    /// Parser for Samsung format filenames: 20230115_123045.jpg -> 2023-01-15 12:30:45
+    /// Parser for WhatsApp format filenames: IMG-20230115-WA0001.jpg -> 2023-01-15
     /// </summary>
-    public class SamsungDateParser : IFilenameDateParser
+    public class WhatsAppDateParser : IFilenameDateParser
     {
         private static readonly Regex Pattern = new Regex(
-            @"^(\d{8})_(\d{6})",
-            RegexOptions.Compiled);
+            @"(?:IMG|VID)-(\d{8})-WA\d+",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public string Name => "Samsung";
+        public string Name => "WhatsApp";
 
         public bool TryParse(string filename, out DateTime dateTime)
         {
@@ -24,12 +24,9 @@ namespace ExifDateFixer
                 return false;
 
             var dateString = match.Groups[1].Value;
-            var timeString = match.Groups[2].Value;
-            var combinedString = dateString + timeString;
-
             return DateTime.TryParseExact(
-                combinedString,
-                "yyyyMMddHHmmss",
+                dateString,
+                "yyyyMMdd",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
                 out dateTime);
