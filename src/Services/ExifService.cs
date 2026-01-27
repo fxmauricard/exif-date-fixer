@@ -5,7 +5,7 @@ using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using ExifLibrary;
 
-namespace ExifDateFixer
+namespace ExifDateFixer.Services
 {
     /// <summary>
     /// Service for reading and writing EXIF metadata

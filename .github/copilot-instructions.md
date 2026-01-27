@@ -4,34 +4,49 @@
 
 **Purpose**: EXIF Date Fixer is a command-line tool that adds EXIF date metadata to JPEG/HEIF images based on filename patterns. It extracts dates from common filename formats (WhatsApp, Samsung, Windows Phone) and writes EXIF metadata (DateTimeOriginal, DateTimeDigitized, DateTime) to image files.
 
-**Size & Type**: Small C# console application (~477 lines of code)
+**Size & Type**: Small C# console application (~500 lines of code)
 **Target Runtime**: .NET 10.0
 **Language**: C# 
 **Project Type**: Console Application (.NET SDK-style project)
+**License**: GNU General Public License v3.0 (GPL-3.0)
+**Version**: 1.0.0
 
 ## Project Structure
 
 ### Root Files
 - `ExifDateFixer.sln` - Visual Studio solution file
-- `ExifDateFixer.csproj` - Main project file (SDK-style)
-- `Program.cs` - Entry point with command-line argument parsing (130 lines)
-- `FileProcessor.cs` - File scanning and processing logic (143 lines)
-- `ExifService.cs` - EXIF metadata reading/writing service (70 lines)
-- `IFilenameDateParser.cs` - Interface for filename date parsers (23 lines)
-- `WhatsAppDateParser.cs` - Parser for WhatsApp format: IMG-20230115-WA0001.jpg (35 lines)
-- `SamsungDateParser.cs` - Parser for Samsung format: 20230115_123045.jpg (38 lines)
-- `WindowsPhoneDateParser.cs` - Parser for Windows Phone format: WP_20230115_12_30_45_Pro.jpg (41 lines)
+- `ExifDateFixer.csproj` - Main project file (SDK-style) with version information
 - `README.md` - Comprehensive documentation
 - `.gitignore` - Standard Visual Studio .gitignore (331 lines)
-- `LICENSE` - MIT License
+- `LICENSE` - GNU General Public License v3.0
+
+### Source Code Structure (src/)
+```
+src/
+├── Program.cs                          # Entry point with command-line argument parsing (140 lines)
+├── FileProcessor.cs                    # File scanning and processing logic (145 lines)
+├── Parsers/
+│   ├── IFilenameDateParser.cs         # Interface for filename date parsers (23 lines)
+│   ├── WhatsAppDateParser.cs          # WhatsApp format: IMG-20230115-WA0001.jpg (35 lines)
+│   ├── SamsungDateParser.cs           # Samsung format: 20230115_123045.jpg (38 lines)
+│   └── WindowsPhoneDateParser.cs      # Windows Phone format: WP_20230115_12_30_45_Pro.jpg (41 lines)
+└── Services/
+    └── ExifService.cs                 # EXIF metadata reading/writing service (70 lines)
+```
+
+### Namespaces
+- `ExifDateFixer` - Main namespace (Program.cs, FileProcessor.cs, ProcessingResult, ProcessingStatus)
+- `ExifDateFixer.Parsers` - All parser implementations (IFilenameDateParser and concrete parsers)
+- `ExifDateFixer.Services` - Service layer (ExifService)
 
 ### Configuration Files
-- `.github/workflows/dotnet-desktop.yml` - GitHub Actions CI workflow
+- `.github/workflows/dotnet-desktop.yml` - GitHub Actions CI workflow (cross-platform)
+- `.github/copilot-instructions.md` - This file
 - No linting configuration files (no .editorconfig, stylecop.json, or .ruleset)
 
 ### Dependencies (from ExifDateFixer.csproj)
 - **System.CommandLine** 2.0.0-beta4.22272.1 - Command-line argument parsing
-- **MetadataExtractor** 2.9.0 - Reading EXIF metadata (note: README incorrectly states 2.8.1)
+- **MetadataExtractor** 2.9.0 - Reading EXIF metadata
 - **ExifLibNet** 2.1.4 - Writing EXIF metadata
 
 ### Build Output Directories (Git-ignored)
@@ -88,6 +103,7 @@
    ```
    - Examples:
      - `dotnet run -- --help` - Show help
+     - `dotnet run -- --version` - Show version
      - `dotnet run -- .` - Scan current directory
      - `dotnet run -- /path/to/images -r` - Scan recursively
    - Takes ~2 seconds to start
@@ -125,18 +141,21 @@
 - Push to `master` branch
 - Pull requests to `master` branch
 
-**CI Process** (runs on Windows):
+**CI Process** (cross-platform matrix build):
 1. Checkout code
 2. Install .NET 10.0 SDK
-3. Setup MSBuild.exe
-4. Run: `msbuild ExifDateFixer.sln /t:Restore,Build /p:Configuration={Debug|Release}`
+3. Restore: `dotnet restore ExifDateFixer.sln`
+4. Build: `dotnet build ExifDateFixer.sln --configuration {Debug|Release} --no-restore`
 
-**Matrix Build**: Builds both Debug and Release configurations
+**Matrix Build**: 
+- Configurations: Debug, Release
+- Operating Systems: ubuntu-latest, windows-latest, macos-latest
 
-**IMPORTANT**: The CI workflow uses MSBuild, NOT `dotnet build`. However, on Linux/macOS, use `dotnet build` as MSBuild is Windows-specific.
+**IMPORTANT**: The CI workflow uses `dotnet build`, which works on all platforms (Windows, Linux, macOS).
 
-**To replicate CI locally on Linux/macOS**:
+**To replicate CI locally**:
 ```bash
+dotnet restore
 dotnet build -c Debug
 dotnet build -c Release
 ```
@@ -144,16 +163,18 @@ dotnet build -c Release
 ## Code Architecture
 
 ### Application Flow
-1. **Program.cs**: Entry point, defines CLI arguments, orchestrates processing
-2. **FileProcessor**: Scans directories for supported files (.jpg, .jpeg, .heic, .heif), processes each file
-3. **ExifService**: Checks for existing EXIF dates, writes new EXIF dates
-4. **Parsers**: Try to extract dates from filenames using regex patterns
+1. **Program.cs** (namespace: `ExifDateFixer`): Entry point, defines CLI arguments, orchestrates processing
+2. **FileProcessor** (namespace: `ExifDateFixer`): Scans directories for supported files (.jpg, .jpeg, .heic, .heif), processes each file
+3. **ExifService** (namespace: `ExifDateFixer.Services`): Checks for existing EXIF dates, writes new EXIF dates
+4. **Parsers** (namespace: `ExifDateFixer.Parsers`): Try to extract dates from filenames using regex patterns
 
 ### Parser System (Extensible)
 To add a new filename format parser:
-1. Create a class implementing `IFilenameDateParser`
-2. Implement `Name` property and `TryParse(string filename, out DateTime dateTime)` method
-3. Register parser in `Program.cs` line 41-46 in the parsers list
+1. Create a class in `src/Parsers/` implementing `IFilenameDateParser` interface
+2. Use namespace `ExifDateFixer.Parsers`
+3. Implement `Name` property and `TryParse(string filename, out DateTime dateTime)` method
+4. Register parser in `src/Program.cs` in the parsers list (around line 50-55)
+5. Build and test with sample filenames
 
 ### Supported File Extensions (case-insensitive)
 - `.jpg`
@@ -173,9 +194,10 @@ For each file:
 ### Safe Change Guidelines
 
 1. **Preserve existing behavior**: Files with EXIF dates are always skipped
-2. **Maintain parser interface**: All parsers must implement `IFilenameDateParser`
-3. **Keep command-line interface**: Don't remove `-r/--recursive` or path argument
+2. **Maintain parser interface**: All parsers must implement `IFilenameDateParser` in `ExifDateFixer.Parsers` namespace
+3. **Keep command-line interface**: Don't remove `-r/--recursive`, `--version`, or path argument
 4. **Preserve supported extensions**: Don't remove existing file extensions
+5. **Maintain namespace organization**: Keep files in appropriate directories and use correct namespaces
 
 ### After Making Changes
 
@@ -197,6 +219,7 @@ For each file:
    - Handle files it can't parse gracefully
    - Process all supported extensions
    - Support recursive scanning
+   - Show version with `--version`
 
 ## Key Implementation Details
 
@@ -215,33 +238,47 @@ For each file:
 - Uses beta version 2.0.0-beta4.22272.1
 - `pathArgument`: Directory to scan (default: current directory)
 - `recursiveOption`: `-r` or `--recursive` flag
+- `--version`: Displays version (built-in to System.CommandLine)
+
+### Version Management
+- Version is defined in `ExifDateFixer.csproj`:
+  - `<Version>1.0.0</Version>`
+  - `<AssemblyVersion>1.0.0.0</AssemblyVersion>`
+  - `<FileVersion>1.0.0.0</FileVersion>`
+- Version is displayed via `--version` command line option
+- Version is shown in application header during execution
 
 ## Common Development Tasks
 
 ### Add a new filename format parser
-1. Create `MyFormatDateParser.cs` in repository root
-2. Implement `IFilenameDateParser` interface
-3. Add regex pattern to extract date/time from filename
-4. Register in `Program.cs` parsers list (line 41-46)
-5. Build and test with sample filenames
+1. Create `MyFormatDateParser.cs` in `src/Parsers/` directory
+2. Use namespace `ExifDateFixer.Parsers`
+3. Implement `IFilenameDateParser` interface
+4. Add regex pattern to extract date/time from filename
+5. Register in `src/Program.cs` parsers list
+6. Build and test with sample filenames
 
 ### Add a new file extension
-1. Edit `Program.cs` line 38: Add extension to `supportedExtensions` array
+1. Edit `src/Program.cs`: Add extension to `supportedExtensions` array
 2. Verify extension is supported by both MetadataExtractor and ExifLibNet
 
 ### Change output formatting
-1. Edit `Program.cs` lines 63-127 (display and summary logic)
+1. Edit `src/Program.cs` (display and summary logic in ProcessFiles method)
 2. Avoid breaking the progress counter `[N/Total]` format
 
 ### Modify EXIF writing behavior
-1. Edit `ExifService.cs` method `WriteExifDate` (lines 49-67)
+1. Edit `src/Services/ExifService.cs` method `WriteExifDate`
 2. See ExifLibrary documentation for available ExifTag values
+
+### Update version number
+1. Edit `ExifDateFixer.csproj` properties: `Version`, `AssemblyVersion`, `FileVersion`
+2. Rebuild the project
 
 ## Important Notes for Agents
 
 1. **Trust these instructions**: All build commands have been tested and validated. Don't search for build steps unless these fail.
 
-2. **No MSBuild on Linux/macOS**: Use `dotnet build` instead. The CI workflow runs on Windows.
+2. **Cross-platform support**: Use `dotnet build` for all platforms. MSBuild is not used anymore.
 
 3. **No tests to run**: Don't try to run `dotnet test` expecting output. There are no unit tests.
 
@@ -255,6 +292,10 @@ For each file:
 
 8. **Error handling**: The application handles exceptions gracefully and continues processing other files.
 
-9. **Package version note**: README lists MetadataExtractor 2.8.1, but .csproj uses 2.9.0 (the .csproj is authoritative).
+9. **Namespace organization**: 
+   - All source files are in `src/` directory and subdirectories
+   - Use `ExifDateFixer.Parsers` for parsers
+   - Use `ExifDateFixer.Services` for services
+   - Use `ExifDateFixer` for main application logic
 
-10. **When examining code**: All source files are in the repository root (flat structure, no src/ directory).
+10. **License**: This project is licensed under GPL-3.0, not MIT. Always respect GPL-3.0 license terms when making changes.
