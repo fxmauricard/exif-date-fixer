@@ -2,121 +2,198 @@
 
 ## Repository Overview
 
-**Purpose**: EXIF Date Fixer is a command-line tool that adds EXIF date metadata to JPEG/HEIF images based on filename patterns. It extracts dates from common filename formats (WhatsApp, Samsung, Windows Phone) and writes EXIF metadata (DateTimeOriginal, DateTimeDigitized, DateTime) to image files.
+**Purpose**: EXIF Date Fixer is a tool that adds EXIF date metadata to JPEG/HEIF images based on filename patterns. It extracts dates from common filename formats (WhatsApp, Samsung, Windows Phone) and writes EXIF metadata (DateTimeOriginal, DateTimeDigitized, DateTime) to image files.
 
-**Size & Type**: Small C# console application (~500 lines of code)
+**Available Interfaces**: 
+- Command-line application (Windows/Linux/macOS)
+- WinUI 3 GUI application (Windows only)
+
+**Size & Type**: Multi-project C# solution with shared business logic
 **Target Runtime**: .NET 10.0
 **Language**: C# 
-**Project Type**: Console Application (.NET SDK-style project)
 **License**: GNU General Public License v3.0 (GPL-3.0)
 **Version**: 1.0.0
 
 ## Project Structure
 
+### Solution Organization
+
+The solution consists of four projects:
+
+1. **ExifDateFixer.Core** - Shared business logic library (platform-agnostic)
+2. **ExifDateFixer** - Command-line interface (cross-platform)
+3. **ExifDateFixer.WinUI** - Windows GUI application (Windows-only)
+4. **ExifDateFixer.Tests** - Unit tests (xUnit)
+
 ### Root Files
-- `ExifDateFixer.sln` - Visual Studio solution file
-- `ExifDateFixer.csproj` - Main project file (SDK-style) with version information
+- `ExifDateFixer.sln` - Visual Studio solution file (includes all 4 projects)
 - `README.md` - Comprehensive documentation
-- `.gitignore` - Standard Visual Studio .gitignore (331 lines)
+- `BUILDING.md` - Cross-platform build instructions
+- `IMPLEMENTATION_SUMMARY.md` - Architecture and implementation details
+- `.gitignore` - Standard Visual Studio .gitignore
 - `LICENSE` - GNU General Public License v3.0
 
-### Source Code Structure (src/)
+### ExifDateFixer.Core (Business Logic Library)
 ```
-src/
-├── Program.cs                          # Entry point with command-line argument parsing (140 lines)
-├── FileProcessor.cs                    # File scanning and processing logic (145 lines)
+ExifDateFixer.Core/
+├── FileProcessor.cs                    # File scanning and processing with progress events
 ├── Parsers/
-│   ├── IFilenameDateParser.cs         # Interface for filename date parsers (23 lines)
-│   ├── WhatsAppDateParser.cs          # WhatsApp format: IMG-20230115-WA0001.jpg (35 lines)
-│   ├── SamsungDateParser.cs           # Samsung format: 20230115_123045.jpg (38 lines)
-│   └── WindowsPhoneDateParser.cs      # Windows Phone format: WP_20230115_12_30_45_Pro.jpg (41 lines)
+│   ├── IFilenameDateParser.cs         # Interface for filename date parsers
+│   ├── WhatsAppDateParser.cs          # WhatsApp format: IMG-20230115-WA0001.jpg
+│   ├── SamsungDateParser.cs           # Samsung format: 20230115_123045.jpg
+│   └── WindowsPhoneDateParser.cs      # Windows Phone format: WP_20230115_12_30_45_Pro.jpg
 └── Services/
-    └── ExifService.cs                 # EXIF metadata reading/writing service (70 lines)
+    └── ExifService.cs                 # EXIF metadata reading/writing service
 ```
 
-### Namespaces
-- `ExifDateFixer` - Main namespace (Program.cs, FileProcessor.cs, ProcessingResult, ProcessingStatus)
-- `ExifDateFixer.Parsers` - All parser implementations (IFilenameDateParser and concrete parsers)
-- `ExifDateFixer.Services` - Service layer (ExifService)
+**Dependencies**:
+- MetadataExtractor 2.9.0 - Reading EXIF metadata
+- ExifLibNet 2.1.4 - Writing EXIF metadata
 
-### Configuration Files
-- `.github/workflows/dotnet-desktop.yml` - GitHub Actions CI workflow (cross-platform)
-- `.github/copilot-instructions.md` - This file
-- No linting configuration files (no .editorconfig, stylecop.json, or .ruleset)
+**Key Features**:
+- Dry-run mode support (preview without modifying files)
+- Progress reporting via events (ProgressChanged)
+- Platform-agnostic implementation
 
-### Dependencies (from ExifDateFixer.csproj)
-- **System.CommandLine** 2.0.0-beta4.22272.1 - Command-line argument parsing
-- **MetadataExtractor** 2.9.0 - Reading EXIF metadata
-- **ExifLibNet** 2.1.4 - Writing EXIF metadata
+### ExifDateFixer (CLI Application)
+```
+ExifDateFixer/
+├── Program.cs                          # Entry point with command-line argument parsing
+└── ExifDateFixer.csproj                # References ExifDateFixer.Core
+```
 
-### Build Output Directories (Git-ignored)
-- `bin/Debug/net10.0/` - Debug build artifacts
-- `bin/Release/net10.0/` - Release build artifacts
-- `obj/` - Intermediate build files
+**Dependencies**:
+- System.CommandLine 2.0.0-beta4.22272.1 - Command-line argument parsing
+- ExifDateFixer.Core (project reference)
+
+**Command-Line Options**:
+- `path` - Directory to scan (default: current directory)
+- `-r, --recursive` - Scan subdirectories recursively
+- `-d, --dry-run` - Preview changes without modifying files
+- `--version` - Show version information
+- `-h, --help` - Show help information
+
+### ExifDateFixer.WinUI (Windows GUI)
+```
+ExifDateFixer.WinUI/
+├── App.xaml                            # Application entry point
+├── App.xaml.cs
+├── MainWindow.xaml                     # Main window UI
+├── MainWindow.xaml.cs                  # Main window logic
+├── app.manifest                        # Windows compatibility manifest
+└── ExifDateFixer.WinUI.csproj          # References ExifDateFixer.Core
+```
+
+**Dependencies**:
+- Microsoft.WindowsAppSDK 1.6.250116000 - WinUI 3 framework
+- Microsoft.Windows.SDK.BuildTools 10.0.26100.1742 - Windows SDK
+- ExifDateFixer.Core (project reference)
+
+**Requirements**:
+- Windows 10 version 1809 (build 17763) or higher
+- Visual Studio 2022 (for building)
+
+### ExifDateFixer.Tests (Unit Tests)
+```
+ExifDateFixer.Tests/
+├── Parsers/
+│   ├── WhatsAppDateParserTests.cs
+│   ├── SamsungDateParserTests.cs
+│   └── WindowsPhoneDateParserTests.cs
+├── Services/
+│   └── ExifServiceTests.cs
+└── ExifDateFixer.Tests.csproj          # References ExifDateFixer.Core
+```
+
+**Test Framework**: xUnit 2.9.3
+**Test Count**: 49 tests (all passing)
 
 ## Build & Development Commands
 
 ### Prerequisites
 - .NET 10.0 SDK (version 10.0.102 or compatible)
 - **CRITICAL**: The project targets .NET 10.0, not .NET 8.0 or earlier versions
+- **Note**: WinUI project can only be built on Windows with Visual Studio 2022
 
 ### Build Commands - TESTED AND VALIDATED
 
 **ALWAYS run these commands from the repository root directory**.
 
-1. **Restore Dependencies** (optional, runs automatically before build):
-   ```bash
-   dotnet restore
-   ```
-   - Takes ~3 seconds
-   - Downloads NuGet packages if not cached
-   - Not required before `dotnet build` or `dotnet run` (they restore automatically)
+#### Building on Linux/macOS
 
-2. **Clean Build Artifacts**:
+1. **Build Core Library**:
    ```bash
-   dotnet clean
+   dotnet build ExifDateFixer.Core/ExifDateFixer.Core.csproj
    ```
-   - Takes <1 second
-   - Removes bin/ and obj/ directories
-   - Use this if you encounter build issues
 
-3. **Build (Debug)**:
+2. **Build CLI Application**:
+   ```bash
+   dotnet build ExifDateFixer.csproj
+   ```
+   - Builds to `bin/Debug/net10.0/ExifDateFixer.dll`
+   - Also builds ExifDateFixer.Core automatically
+
+3. **Build Tests**:
+   ```bash
+   dotnet build ExifDateFixer.Tests/ExifDateFixer.Tests.csproj
+   ```
+
+4. **Run Tests**:
+   ```bash
+   dotnet test ExifDateFixer.Tests/ExifDateFixer.Tests.csproj
+   ```
+   - All 49 tests should pass
+
+#### Building on Windows
+
+On Windows, you can build the entire solution including the WinUI GUI:
+
+1. **Build Entire Solution**:
    ```bash
    dotnet build
    ```
-   - Takes ~7 seconds on first build, ~1-2 seconds on incremental builds
-   - Builds to `bin/Debug/net10.0/ExifDateFixer.dll`
-   - Automatically runs restore if needed
-   - **ALWAYS succeeds** with no warnings or errors on clean repository
+   - Builds all projects: Core, CLI, WinUI, Tests
+   - Note: May fail on Linux/macOS due to WinUI project
 
-4. **Build (Release)**:
+2. **Build WinUI GUI** (Windows only):
    ```bash
-   dotnet build -c Release
+   dotnet build ExifDateFixer.WinUI/ExifDateFixer.WinUI.csproj
    ```
-   - Takes ~1-2 seconds
-   - Builds to `bin/Release/net10.0/ExifDateFixer.dll`
-   - Use this for production builds
+   - Or open in Visual Studio 2022 and build
 
-5. **Run the Application**:
-   ```bash
-   dotnet run -- [arguments]
-   ```
-   - Examples:
-     - `dotnet run -- --help` - Show help
-     - `dotnet run -- --version` - Show version
-     - `dotnet run -- .` - Scan current directory
-     - `dotnet run -- /path/to/images -r` - Scan recursively
-   - Takes ~2 seconds to start
+### Running the Application
 
-6. **Direct Execution** (after building):
+#### CLI Application:
    ```bash
-   ./bin/Debug/net10.0/ExifDateFixer [arguments]
-   # or
-   dotnet bin/Debug/net10.0/ExifDateFixer.dll [arguments]
+   # Show help
+   dotnet run --project ExifDateFixer.csproj -- --help
+   
+   # Scan current directory
+   dotnet run --project ExifDateFixer.csproj -- .
+   
+   # Scan with options
+   dotnet run --project ExifDateFixer.csproj -- /path/to/images -r -d
+   
+   # Dry run mode
+   dotnet run --project ExifDateFixer.csproj -- /path/to/images --dry-run
    ```
+
+#### GUI Application (Windows only):
+   - Open `ExifDateFixer.sln` in Visual Studio 2022
+   - Set `ExifDateFixer.WinUI` as startup project
+   - Press F5 to run
 
 ### Testing
-**NO TESTS EXIST** - This project does not have a test suite. Running `dotnet test` will complete successfully but do nothing.
+
+The project has 49 unit tests covering parsers and services:
+
+```bash
+# Run all tests
+dotnet test ExifDateFixer.Tests/ExifDateFixer.Tests.csproj
+
+# Run with verbose output
+dotnet test ExifDateFixer.Tests/ExifDateFixer.Tests.csproj --verbosity normal
+```
 
 ### Linting/Formatting
 **NO LINTERS CONFIGURED** - No StyleCop, EditorConfig, or other code style tools are in use.
@@ -127,11 +204,14 @@ src/
 
 1. **If build fails with "framework not found"**: Verify .NET 10.0 SDK is installed with `dotnet --version`
 
-2. **If incremental build seems stale**: Run `dotnet clean` then `dotnet build`
+2. **If WinUI project fails on Linux/macOS**: This is expected. Build individual projects instead:
+   - `dotnet build ExifDateFixer.Core/ExifDateFixer.Core.csproj`
+   - `dotnet build ExifDateFixer.csproj`
+   - `dotnet build ExifDateFixer.Tests/ExifDateFixer.Tests.csproj`
 
-3. **After making code changes**: Simply run `dotnet build` - no special steps needed
+3. **If incremental build seems stale**: Run `dotnet clean` then build again
 
-4. **Build output**: Successfully built DLL will be at `bin/Debug/net10.0/ExifDateFixer.dll` or `bin/Release/net10.0/ExifDateFixer.dll`
+4. **After making code changes**: Simply run `dotnet build` - no special steps needed
 
 ## CI/CD - GitHub Actions Workflow
 
@@ -162,19 +242,67 @@ dotnet build -c Release
 
 ## Code Architecture
 
+### Cross-Platform Architecture
+
+The solution uses a shared-core architecture to support multiple user interfaces:
+
+```
+┌─────────────────────────────────────┐
+│   Platform-Specific UI Layers      │
+├─────────────┬──────────┬────────────┤
+│  CLI        │ WinUI 3  │  Future    │
+│ (Any OS)    │(Windows) │(Mac/Linux) │
+└─────────────┴──────────┴────────────┘
+        │           │           │
+        └───────────┼───────────┘
+                    │
+        ┌───────────▼────────────┐
+        │  ExifDateFixer.Core    │
+        │  (Business Logic)      │
+        └────────────────────────┘
+```
+
 ### Application Flow
-1. **Program.cs** (namespace: `ExifDateFixer`): Entry point, defines CLI arguments, orchestrates processing
-2. **FileProcessor** (namespace: `ExifDateFixer`): Scans directories for supported files (.jpg, .jpeg, .heic, .heif), processes each file
-3. **ExifService** (namespace: `ExifDateFixer.Services`): Checks for existing EXIF dates, writes new EXIF dates
-4. **Parsers** (namespace: `ExifDateFixer.Parsers`): Try to extract dates from filenames using regex patterns
+
+#### Core Library (ExifDateFixer.Core)
+1. **FileProcessor**: Scans directories, processes files, raises progress events
+2. **ExifService** (namespace: `ExifDateFixer.Services`): Reads/writes EXIF metadata
+3. **Parsers** (namespace: `ExifDateFixer.Parsers`): Extract dates from filenames
+
+#### CLI Application (ExifDateFixer)
+1. **Program.cs**: Entry point, parses command-line arguments
+2. Creates FileProcessor and subscribes to progress events
+3. Displays output to console
+
+#### GUI Application (ExifDateFixer.WinUI)
+1. **App.xaml/cs**: Application entry point
+2. **MainWindow.xaml/cs**: Main window with folder picker, options, log viewer
+3. Creates FileProcessor and subscribes to progress events
+4. Updates UI with progress information
+
+### Key Features
+
+#### Dry-Run Mode
+Both CLI and GUI support dry-run mode:
+- CLI: `--dry-run` or `-d` flag
+- GUI: "Dry run" checkbox
+- Core: `ProcessFile(filePath, dryRun: true)`
+- Returns `ProcessingStatus.WouldUpdate` instead of modifying files
+
+#### Progress Reporting
+FileProcessor raises `ProgressChanged` events:
+- Event args include: FilePath, FileName, CurrentFile, TotalFiles, Result
+- CLI subscribes to display console output
+- GUI subscribes to update log viewer and progress bar
 
 ### Parser System (Extensible)
 To add a new filename format parser:
-1. Create a class in `src/Parsers/` implementing `IFilenameDateParser` interface
+1. Create a class in `ExifDateFixer.Core/Parsers/` implementing `IFilenameDateParser` interface
 2. Use namespace `ExifDateFixer.Parsers`
 3. Implement `Name` property and `TryParse(string filename, out DateTime dateTime)` method
-4. Register parser in `src/Program.cs` in the parsers list (around line 50-55)
-5. Build and test with sample filenames
+4. Register parser in both `Program.cs` and `MainWindow.xaml.cs` in the parsers list
+5. Add unit tests in `ExifDateFixer.Tests/Parsers/`
+6. Build and test with sample filenames
 
 ### Supported File Extensions (case-insensitive)
 - `.jpg`
@@ -250,52 +378,74 @@ For each file:
 
 ## Common Development Tasks
 
+## Common Development Tasks
+
 ### Add a new filename format parser
-1. Create `MyFormatDateParser.cs` in `src/Parsers/` directory
+1. Create `MyFormatDateParser.cs` in `ExifDateFixer.Core/Parsers/` directory
 2. Use namespace `ExifDateFixer.Parsers`
 3. Implement `IFilenameDateParser` interface
 4. Add regex pattern to extract date/time from filename
-5. Register in `src/Program.cs` parsers list
-6. Build and test with sample filenames
+5. Register in parsers list in:
+   - `Program.cs` (CLI)
+   - `MainWindow.xaml.cs` (GUI)
+6. Add unit tests in `ExifDateFixer.Tests/Parsers/`
+7. Build and test with sample filenames
 
 ### Add a new file extension
-1. Edit `src/Program.cs`: Add extension to `supportedExtensions` array
+1. Edit the supported extensions arrays in:
+   - `Program.cs` (line ~49)
+   - `MainWindow.xaml.cs` (line ~115)
 2. Verify extension is supported by both MetadataExtractor and ExifLibNet
 
 ### Change output formatting
-1. Edit `src/Program.cs` (display and summary logic in ProcessFiles method)
-2. Avoid breaking the progress counter `[N/Total]` format
+For CLI: Edit `Program.cs` (display and summary logic in ProcessFiles method)
+For GUI: Edit `MainWindow.xaml.cs` (log formatting in ProcessFilesAsync method)
 
 ### Modify EXIF writing behavior
-1. Edit `src/Services/ExifService.cs` method `WriteExifDate`
+1. Edit `ExifDateFixer.Core/Services/ExifService.cs` method `WriteExifDate`
 2. See ExifLibrary documentation for available ExifTag values
 
 ### Update version number
-1. Edit `ExifDateFixer.csproj` properties: `Version`, `AssemblyVersion`, `FileVersion`
+1. Edit version properties in:
+   - `ExifDateFixer.csproj`: `Version`, `AssemblyVersion`, `FileVersion`
+   - `ExifDateFixer.Core/ExifDateFixer.Core.csproj`: `Version`
+   - `ExifDateFixer.WinUI/ExifDateFixer.WinUI.csproj`: `Version`
 2. Rebuild the project
+
+### Add a GUI for another platform
+1. Create new project (e.g., `ExifDateFixer.Avalonia` for Linux/macOS)
+2. Add project reference to `ExifDateFixer.Core`
+3. Implement UI using platform's framework
+4. Subscribe to FileProcessor.ProgressChanged events
+5. Use FileProcessor.ProcessFiles or ProcessFile methods
 
 ## Important Notes for Agents
 
-1. **Trust these instructions**: All build commands have been tested and validated. Don't search for build steps unless these fail.
+1. **Architecture**: This is a multi-project solution. Always reference ExifDateFixer.Core for business logic.
 
-2. **Cross-platform support**: Use `dotnet build` for all platforms. MSBuild is not used anymore.
+2. **Cross-platform builds**: 
+   - CLI builds on all platforms
+   - WinUI only builds on Windows
+   - Build individual projects on Linux/macOS
 
-3. **No tests to run**: Don't try to run `dotnet test` expecting output. There are no unit tests.
+3. **Testing**: 49 unit tests exist in ExifDateFixer.Tests. Always run them after changes.
 
-4. **Clean builds when stuck**: If you see unexpected behavior, `dotnet clean && dotnet build` resolves most issues.
+4. **Dry-run mode**: Both CLI and GUI support dry-run. Test this feature when making changes.
 
-5. **Case-insensitive extensions**: File extension matching is case-insensitive (FileProcessor.cs handles this via Directory.GetFiles).
+5. **Progress events**: GUI and future UIs rely on FileProcessor.ProgressChanged events. Preserve this functionality.
 
-6. **Parser order matters**: Parsers are tried in order listed in Program.cs. First match wins.
+6. **Case-insensitive extensions**: File extension matching is case-insensitive (FileProcessor.cs handles this).
 
-7. **No database or state**: This is a stateless tool. Each run is independent.
+7. **Parser order matters**: Parsers are tried in order. First match wins.
 
-8. **Error handling**: The application handles exceptions gracefully and continues processing other files.
+8. **No database or state**: This is a stateless tool. Each run is independent.
 
-9. **Namespace organization**: 
-   - All source files are in `src/` directory and subdirectories
-   - Use `ExifDateFixer.Parsers` for parsers
-   - Use `ExifDateFixer.Services` for services
-   - Use `ExifDateFixer` for main application logic
+9. **Error handling**: The application handles exceptions gracefully and continues processing other files.
 
-10. **License**: This project is licensed under GPL-3.0, not MIT. Always respect GPL-3.0 license terms when making changes.
+10. **Namespace organization**: 
+   - `ExifDateFixer` - CLI application and shared types
+   - `ExifDateFixer.Parsers` - All parsers
+   - `ExifDateFixer.Services` - Services (ExifService)
+   - `ExifDateFixer.WinUI` - Windows GUI
+
+11. **License**: This project is licensed under GPL-3.0. Always respect GPL-3.0 license terms when making changes.
