@@ -19,6 +19,7 @@
   <ItemGroup>
     <Compile Remove="ExifDateFixer.Tests/**" />
     <Compile Remove="ExifDateFixer.Core/**" />
+    <Compile Remove="ExifDateFixer.WinUI/**" />
   </ItemGroup>
 
 </Project>
