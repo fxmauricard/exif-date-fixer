@@ -2,7 +2,10 @@
 
 A tool to add EXIF date metadata to JPEG/HEIF images based on filename patterns.
 
-Available as both a **command-line application** (Windows/Linux/macOS) and a **graphical interface** (Windows only).
+Available as:
+- **Command-line application** (Windows/Linux/macOS)
+- **Graphical interface for Windows** (WinUI 3)
+- **Cross-platform graphical interface** (Avalonia - Windows/macOS/Linux)
 
 ## Features
 
@@ -49,7 +52,7 @@ dotnet build -c Release
 
 The compiled executable will be in `bin/Release/net10.0/`
 
-### GUI Application (Windows Only)
+### GUI Application - Windows Only (WinUI 3)
 
 The WinUI 3 GUI application requires Windows 10 version 1809 or higher.
 
@@ -59,9 +62,31 @@ The WinUI 3 GUI application requires Windows 10 version 1809 or higher.
 
 See [ExifDateFixer.WinUI/README.md](ExifDateFixer.WinUI/README.md) for detailed GUI documentation.
 
+### GUI Application - Cross-Platform (Avalonia)
+
+The Avalonia GUI application works on Windows, macOS, and Linux.
+
+```bash
+dotnet run --project ExifDateFixer.Avalonia/ExifDateFixer.Avalonia.csproj
+```
+
+Or build and run the executable from the build output directory.
+
+See [ExifDateFixer.Avalonia/README.md](ExifDateFixer.Avalonia/README.md) for detailed documentation.
+
 ## Usage
 
-### GUI Application (Windows)
+### GUI Application (All Platforms - Avalonia)
+
+1. Launch the ExifDateFixer Avalonia application
+2. Click "Browse..." to select a folder containing images
+3. Check options:
+   - "Scan subdirectories recursively" to include subfolders
+   - "Dry run" to preview changes without modifying files
+4. Click "Start Processing"
+5. View real-time progress and results in the log viewer
+
+### GUI Application (Windows Only - WinUI)
 
 1. Launch the ExifDateFixer GUI application
 2. Click "Browse..." to select a folder containing images
@@ -227,11 +252,17 @@ public class MyCustomDateParser : IFilenameDateParser
 - **Microsoft.Windows.SDK.BuildTools** (10.0.26100.1742): Windows SDK
 - References ExifDateFixer.Core
 
+### GUI Application (ExifDateFixer.Avalonia)
+- **Avalonia** (11.3.11): Cross-platform UI framework
+- **Avalonia.Desktop** (11.3.11): Desktop-specific features
+- **Avalonia.Themes.Fluent** (11.3.11): Fluent Design theme
+- References ExifDateFixer.Core
+
 ## Development
 
 ### Project Structure
 
-The solution is organized into three main projects:
+The solution is organized into five main projects:
 
 1. **ExifDateFixer.Core**: Shared business logic library
    - FileProcessor: File scanning and processing
@@ -249,7 +280,12 @@ The solution is organized into three main projects:
    - Requires Windows 10 version 1809 or higher
    - References ExifDateFixer.Core
 
-4. **ExifDateFixer.Tests**: Unit tests
+4. **ExifDateFixer.Avalonia**: Cross-platform GUI application
+   - Avalonia UI framework
+   - Works on Windows, macOS, and Linux
+   - References ExifDateFixer.Core
+
+5. **ExifDateFixer.Tests**: Unit tests
    - xUnit test framework
    - Comprehensive coverage of parsers and services
    - References ExifDateFixer.Core
@@ -257,7 +293,7 @@ The solution is organized into three main projects:
 ### Building the Project
 
 ```bash
-# Build the entire solution
+# Build the entire solution (Windows only - includes WinUI)
 dotnet build
 
 # Build only the CLI application
@@ -266,17 +302,21 @@ dotnet build ExifDateFixer.csproj -c Release
 # Build only the Core library
 dotnet build ExifDateFixer.Core/ExifDateFixer.Core.csproj -c Release
 
-# Build the GUI (Windows only, requires Visual Studio 2022)
+# Build the WinUI GUI (Windows only, requires Visual Studio 2022)
 dotnet build ExifDateFixer.WinUI/ExifDateFixer.WinUI.csproj -c Release
+
+# Build the Avalonia GUI (cross-platform)
+dotnet build ExifDateFixer.Avalonia/ExifDateFixer.Avalonia.csproj -c Release
 ```
 
-### Future Platform Support
+### Cross-Platform GUI Support
 
-The architecture is designed to support additional GUI implementations:
-- **macOS**: Could use .NET MAUI or Avalonia
-- **Linux**: Could use Avalonia or GTK#
+✅ **Now Available**: The Avalonia GUI provides full cross-platform support:
+- **Windows**: Works on Windows 7, 8, 10, and 11
+- **macOS**: Works on macOS 10.13 (High Sierra) and later
+- **Linux**: Works on most distributions with X11 or Wayland
 
-All platforms would share the same ExifDateFixer.Core business logic.
+All GUI implementations (WinUI and Avalonia) share the same ExifDateFixer.Core business logic.
 
 ### Running Tests
 

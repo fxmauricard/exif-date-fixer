@@ -7,6 +7,7 @@
 **Available Interfaces**: 
 - Command-line application (Windows/Linux/macOS)
 - WinUI 3 GUI application (Windows only)
+- Avalonia GUI application (Windows/macOS/Linux)
 
 **Size & Type**: Multi-project C# solution with shared business logic
 **Target Runtime**: .NET 10.0
@@ -18,15 +19,16 @@
 
 ### Solution Organization
 
-The solution consists of four projects:
+The solution consists of five projects:
 
 1. **ExifDateFixer.Core** - Shared business logic library (platform-agnostic)
 2. **ExifDateFixer** - Command-line interface (cross-platform)
 3. **ExifDateFixer.WinUI** - Windows GUI application (Windows-only)
-4. **ExifDateFixer.Tests** - Unit tests (xUnit)
+4. **ExifDateFixer.Avalonia** - Cross-platform GUI application (Windows/macOS/Linux)
+5. **ExifDateFixer.Tests** - Unit tests (xUnit)
 
 ### Root Files
-- `ExifDateFixer.sln` - Visual Studio solution file (includes all 4 projects)
+- `ExifDateFixer.sln` - Visual Studio solution file (includes all 5 projects)
 - `README.md` - Comprehensive documentation
 - `BUILDING.md` - Cross-platform build instructions
 - `IMPLEMENTATION_SUMMARY.md` - Architecture and implementation details
@@ -92,6 +94,27 @@ ExifDateFixer.WinUI/
 **Requirements**:
 - Windows 10 version 1809 (build 17763) or higher
 - Visual Studio 2022 (for building)
+
+### ExifDateFixer.Avalonia (Cross-Platform GUI)
+```
+ExifDateFixer.Avalonia/
+├── App.axaml                           # Application entry point
+├── App.axaml.cs
+├── MainWindow.axaml                    # Main window UI
+├── MainWindow.axaml.cs                 # Main window logic
+├── app.manifest                        # Application manifest
+└── ExifDateFixer.Avalonia.csproj       # References ExifDateFixer.Core
+```
+
+**Dependencies**:
+- Avalonia 11.3.11 - Cross-platform UI framework
+- Avalonia.Desktop 11.3.11 - Desktop-specific features
+- Avalonia.Themes.Fluent 11.3.11 - Fluent Design theme
+- ExifDateFixer.Core (project reference)
+
+**Requirements**:
+- Works on Windows, macOS, and Linux
+- No special requirements beyond .NET 10.0 SDK
 
 ### ExifDateFixer.Tests (Unit Tests)
 ```
