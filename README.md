@@ -1,6 +1,8 @@
 # EXIF Date Fixer
 
-A command-line tool to add EXIF date metadata to JPEG/HEIF images based on filename patterns.
+A tool to add EXIF date metadata to JPEG/HEIF images based on filename patterns.
+
+Available as both a **command-line application** (Windows/Linux/macOS) and a **graphical interface** (Windows only).
 
 ## Features
 
@@ -8,7 +10,9 @@ A command-line tool to add EXIF date metadata to JPEG/HEIF images based on filen
 - **EXIF Metadata Writing**: Adds DateTimeOriginal, DateTimeDigitized, and DateTime EXIF tags
 - **Extensible Parser System**: Easy to add new filename format parsers
 - **Recursive Scanning**: Optional recursive directory traversal
-- **Progress Reporting**: Clear console output with detailed statistics
+- **Dry Run Mode**: Preview changes without modifying files (GUI and future CLI versions)
+- **Progress Reporting**: Clear output with detailed statistics
+- **Cross-Platform Core**: Shared business logic across CLI and GUI
 
 ## Supported Filename Formats
 
@@ -33,7 +37,9 @@ The tool currently supports three common filename patterns:
 
 - .NET 10.0 SDK or later
 
-### Build from Source
+### CLI Application
+
+The command-line application works on Windows, Linux, and macOS.
 
 ```bash
 git clone https://github.com/fxmauricard/exif-date-fixer.git
@@ -43,7 +49,29 @@ dotnet build -c Release
 
 The compiled executable will be in `bin/Release/net10.0/`
 
+### GUI Application (Windows Only)
+
+The WinUI 3 GUI application requires Windows 10 version 1809 or higher.
+
+1. Open `ExifDateFixer.sln` in Visual Studio 2022 (on Windows)
+2. Set `ExifDateFixer.WinUI` as the startup project
+3. Build and run
+
+See [ExifDateFixer.WinUI/README.md](ExifDateFixer.WinUI/README.md) for detailed GUI documentation.
+
 ## Usage
+
+### GUI Application (Windows)
+
+1. Launch the ExifDateFixer GUI application
+2. Click "Browse..." to select a folder containing images
+3. Check options:
+   - "Scan subdirectories recursively" to include subfolders
+   - "Dry run" to preview changes without modifying files
+4. Click "Start Processing"
+5. View real-time progress and results in the log viewer
+
+### CLI Application
 
 ### Basic Usage
 
@@ -140,21 +168,69 @@ public class MyCustomDateParser : IFilenameDateParser
 
 ## Dependencies
 
-- **System.CommandLine** (2.0.0-beta4.22272.1): Command-line argument parsing
+### Core Library (ExifDateFixer.Core)
 - **MetadataExtractor** (2.9.0): Reading EXIF metadata
 - **ExifLibNet** (2.1.4): Writing EXIF metadata
 
+### CLI Application (ExifDateFixer)
+- **System.CommandLine** (2.0.0-beta4.22272.1): Command-line argument parsing
+- References ExifDateFixer.Core
+
+### GUI Application (ExifDateFixer.WinUI)
+- **Microsoft.WindowsAppSDK** (1.6.250116000): WinUI 3 framework
+- **Microsoft.Windows.SDK.BuildTools** (10.0.26100.1742): Windows SDK
+- References ExifDateFixer.Core
+
 ## Development
+
+### Project Structure
+
+The solution is organized into three main projects:
+
+1. **ExifDateFixer.Core**: Shared business logic library
+   - FileProcessor: File scanning and processing
+   - ExifService: EXIF metadata operations
+   - Parsers: Filename date parsing implementations
+   - Platform-agnostic, reusable across CLI and GUI
+
+2. **ExifDateFixer**: Command-line application
+   - Cross-platform (Windows/Linux/macOS)
+   - Uses System.CommandLine for argument parsing
+   - References ExifDateFixer.Core
+
+3. **ExifDateFixer.WinUI**: Windows GUI application
+   - WinUI 3 modern Windows interface
+   - Requires Windows 10 version 1809 or higher
+   - References ExifDateFixer.Core
+
+4. **ExifDateFixer.Tests**: Unit tests
+   - xUnit test framework
+   - Comprehensive coverage of parsers and services
+   - References ExifDateFixer.Core
 
 ### Building the Project
 
 ```bash
-# Build the solution
+# Build the entire solution
 dotnet build
 
-# Build in Release mode
-dotnet build -c Release
+# Build only the CLI application
+dotnet build ExifDateFixer.csproj -c Release
+
+# Build only the Core library
+dotnet build ExifDateFixer.Core/ExifDateFixer.Core.csproj -c Release
+
+# Build the GUI (Windows only, requires Visual Studio 2022)
+dotnet build ExifDateFixer.WinUI/ExifDateFixer.WinUI.csproj -c Release
 ```
+
+### Future Platform Support
+
+The architecture is designed to support additional GUI implementations:
+- **macOS**: Could use .NET MAUI or Avalonia
+- **Linux**: Could use Avalonia or GTK#
+
+All platforms would share the same ExifDateFixer.Core business logic.
 
 ### Running Tests
 
