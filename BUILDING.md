@@ -24,7 +24,7 @@ dotnet test ExifDateFixer.Tests/ExifDateFixer.Tests.csproj
 
 ## Building on Windows
 
-On Windows with Visual Studio 2022, you can build the entire solution:
+On Windows with Visual Studio 2025, you can build the entire solution:
 
 ```bash
 # Build everything including both GUIs (WinUI and Avalonia)
@@ -51,4 +51,4 @@ dotnet run --project ExifDateFixer.Avalonia/ExifDateFixer.Avalonia.csproj
 ```
 
 ### WinUI GUI (Windows Only)
-Open the solution in Visual Studio 2022, set `ExifDateFixer.WinUI` as startup project, and press F5.
+Open the solution in Visual Studio 2025, set `ExifDateFixer.WinUI` as startup project, and press F5.
