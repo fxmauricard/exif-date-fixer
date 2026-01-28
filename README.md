@@ -10,7 +10,7 @@ Available as both a **command-line application** (Windows/Linux/macOS) and a **g
 - **EXIF Metadata Writing**: Adds DateTimeOriginal, DateTimeDigitized, and DateTime EXIF tags
 - **Extensible Parser System**: Easy to add new filename format parsers
 - **Recursive Scanning**: Optional recursive directory traversal
-- **Dry Run Mode**: Preview changes without modifying files (GUI and future CLI versions)
+- **Dry Run Mode**: Preview changes without modifying files (CLI and GUI)
 - **Progress Reporting**: Clear output with detailed statistics
 - **Cross-Platform Core**: Shared business logic across CLI and GUI
 
@@ -94,6 +94,17 @@ ExifDateFixer "C:\Photos" -r
 ExifDateFixer "C:\Photos" --recursive
 ```
 
+### Dry Run Mode
+
+```bash
+# Preview changes without modifying files
+ExifDateFixer "C:\Photos" --dry-run
+ExifDateFixer "C:\Photos" -d
+
+# Combine with recursive scanning
+ExifDateFixer "C:\Photos" -r --dry-run
+```
+
 ### Help
 
 ```bash
@@ -104,9 +115,12 @@ ExifDateFixer -h
 
 ## Example Output
 
+### Normal Mode
+
 ```
 EXIF Date Fixer - Scanning: C:\Photos
 Recursive: Yes
+Dry Run: No
 Supported extensions: .jpg, .jpeg, .heic, .heif
 
 Found 150 files to process...
@@ -128,6 +142,38 @@ Found 150 files to process...
 Summary:
 - Total files: 150
 - Updated: 45
+- Skipped (has date): 80
+- Skipped (no date in filename): 20
+- Errors: 5
+```
+
+### Dry Run Mode
+
+```
+EXIF Date Fixer - Scanning: C:\Photos (DRY RUN)
+Recursive: Yes
+Dry Run: Yes
+Supported extensions: .jpg, .jpeg, .heic, .heif
+
+Found 150 files to process...
+
+[1/150] IMG-20230115-WA0001.jpg
+  → Would update: Would add EXIF date 2023-01-15 00:00:00
+
+[2/150] photo.jpg
+  - Skipped: Could not parse date from filename
+
+[3/150] 20230120_143022.jpg
+  → Would update: Would add EXIF date 2023-01-20 14:30:22
+
+[4/150] vacation.jpg
+  - Skipped: EXIF date already exists
+
+...
+
+Summary:
+- Total files: 150
+- Would update: 45
 - Skipped (has date): 80
 - Skipped (no date in filename): 20
 - Errors: 5

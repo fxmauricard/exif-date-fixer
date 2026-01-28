@@ -32,18 +32,23 @@ namespace ExifDateFixer
                 aliases: new[] { "-r", "--recursive" },
                 description: "Scan directories recursively");
 
+            var dryRunOption = new Option<bool>(
+                aliases: new[] { "-d", "--dry-run" },
+                description: "Preview changes without modifying files");
+
             var rootCommand = new RootCommand("EXIF Date Fixer - Adds EXIF date metadata to images based on filename patterns")
             {
                 pathArgument,
-                recursiveOption
+                recursiveOption,
+                dryRunOption
             };
 
-            rootCommand.SetHandler(ProcessFiles, pathArgument, recursiveOption);
+            rootCommand.SetHandler(ProcessFiles, pathArgument, recursiveOption, dryRunOption);
 
             return await rootCommand.InvokeAsync(args);
         }
 
-        static void ProcessFiles(string path, bool recursive)
+        static void ProcessFiles(string path, bool recursive, bool dryRun)
         {
             // Supported file extensions (case-insensitive)
             var supportedExtensions = new[] { ".jpg", ".jpeg", ".heic", ".heif" };
@@ -71,8 +76,10 @@ namespace ExifDateFixer
             var absolutePath = Path.GetFullPath(path);
 
             // Display header
-            Console.WriteLine($"EXIF Date Fixer v{GetVersion()} - Scanning: " + absolutePath);
+            var dryRunText = dryRun ? " (DRY RUN)" : "";
+            Console.WriteLine($"EXIF Date Fixer v{GetVersion()} - Scanning: " + absolutePath + dryRunText);
             Console.WriteLine($"Recursive: {(recursive ? "Yes" : "No")}");
+            Console.WriteLine($"Dry Run: {(dryRun ? "Yes" : "No")}");
             Console.WriteLine($"Supported extensions: {string.Join(", ", supportedExtensions)}");
             Console.WriteLine();
 
@@ -91,6 +98,7 @@ namespace ExifDateFixer
 
             // Statistics
             int updated = 0;
+            int wouldUpdate = 0;
             int skippedHasDate = 0;
             int skippedNoDate = 0;
             int errors = 0;
@@ -103,13 +111,17 @@ namespace ExifDateFixer
 
                 Console.WriteLine($"[{i + 1}/{files.Count}] {filename}");
 
-                var result = processor.ProcessFile(file);
+                var result = processor.ProcessFile(file, dryRun);
 
                 switch (result.Status)
                 {
                     case ProcessingStatus.Updated:
                         Console.WriteLine($"  ✓ Updated: {result.Message}");
                         updated++;
+                        break;
+                    case ProcessingStatus.WouldUpdate:
+                        Console.WriteLine($"  → Would update: {result.Message}");
+                        wouldUpdate++;
                         break;
                     case ProcessingStatus.SkippedHasDate:
                         Console.WriteLine($"  - Skipped: {result.Message}");
@@ -131,7 +143,14 @@ namespace ExifDateFixer
             // Display summary
             Console.WriteLine("Summary:");
             Console.WriteLine($"- Total files: {files.Count}");
-            Console.WriteLine($"- Updated: {updated}");
+            if (dryRun)
+            {
+                Console.WriteLine($"- Would update: {wouldUpdate}");
+            }
+            else
+            {
+                Console.WriteLine($"- Updated: {updated}");
+            }
             Console.WriteLine($"- Skipped (has date): {skippedHasDate}");
             Console.WriteLine($"- Skipped (no date in filename): {skippedNoDate}");
             Console.WriteLine($"- Errors: {errors}");
