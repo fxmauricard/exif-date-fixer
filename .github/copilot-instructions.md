@@ -93,7 +93,7 @@ ExifDateFixer.WinUI/
 
 **Requirements**:
 - Windows 10 version 1809 (build 17763) or higher
-- Visual Studio 2022 (for building)
+- Visual Studio 2025 (for building)
 
 ### ExifDateFixer.Avalonia (Cross-Platform GUI)
 ```
@@ -136,7 +136,7 @@ ExifDateFixer.Tests/
 ### Prerequisites
 - .NET 10.0 SDK (version 10.0.102 or compatible)
 - **CRITICAL**: The project targets .NET 10.0, not .NET 8.0 or earlier versions
-- **Note**: WinUI project can only be built on Windows with Visual Studio 2022
+- **Note**: WinUI project can only be built on Windows with Visual Studio 2025
 
 ### Build Commands - TESTED AND VALIDATED
 
@@ -182,7 +182,7 @@ On Windows, you can build the entire solution including the WinUI GUI:
    ```bash
    dotnet build ExifDateFixer.WinUI/ExifDateFixer.WinUI.csproj
    ```
-   - Or open in Visual Studio 2022 and build
+   - Or open in Visual Studio 2025 and build
 
 ### Running the Application
 
@@ -202,7 +202,7 @@ On Windows, you can build the entire solution including the WinUI GUI:
    ```
 
 #### GUI Application (Windows only):
-   - Open `ExifDateFixer.sln` in Visual Studio 2022
+   - Open `ExifDateFixer.sln` in Visual Studio 2025
    - Set `ExifDateFixer.WinUI` as startup project
    - Press F5 to run
 

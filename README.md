@@ -56,7 +56,7 @@ The compiled executable will be in `bin/Release/net10.0/`
 
 The WinUI 3 GUI application requires Windows 10 version 1809 or higher.
 
-1. Open `ExifDateFixer.sln` in Visual Studio 2022 (on Windows)
+1. Open `ExifDateFixer.sln` in Visual Studio 2025 (on Windows)
 2. Set `ExifDateFixer.WinUI` as the startup project
 3. Build and run
 
@@ -302,7 +302,7 @@ dotnet build ExifDateFixer.csproj -c Release
 # Build only the Core library
 dotnet build ExifDateFixer.Core/ExifDateFixer.Core.csproj -c Release
 
-# Build the WinUI GUI (Windows only, requires Visual Studio 2022)
+# Build the WinUI GUI (Windows only, requires Visual Studio 2025)
 dotnet build ExifDateFixer.WinUI/ExifDateFixer.WinUI.csproj -c Release
 
 # Build the Avalonia GUI (cross-platform)
