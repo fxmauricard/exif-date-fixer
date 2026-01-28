@@ -70,9 +70,30 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    # Restore and build the console application using dotnet CLI
-    - name: Restore the solution
+    # Restore and build projects based on OS
+    - name: Restore dependencies (Windows)
+      if: matrix.os == 'windows-latest'
       run: dotnet restore ${{ env.Solution_Name }}
 
-    - name: Build the solution
+    - name: Build solution (Windows)
+      if: matrix.os == 'windows-latest'
       run: dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
+
+    - name: Restore dependencies (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        dotnet restore ExifDateFixer.Core/ExifDateFixer.Core.csproj
+        dotnet restore ExifDateFixer.csproj
+        dotnet restore ExifDateFixer.Avalonia/ExifDateFixer.Avalonia.csproj
+        dotnet restore ExifDateFixer.Tests/ExifDateFixer.Tests.csproj
+
+    - name: Build projects (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        dotnet build ExifDateFixer.Core/ExifDateFixer.Core.csproj --configuration ${{ matrix.configuration }} --no-restore
+        dotnet build ExifDateFixer.csproj --configuration ${{ matrix.configuration }} --no-restore
+        dotnet build ExifDateFixer.Avalonia/ExifDateFixer.Avalonia.csproj --configuration ${{ matrix.configuration }} --no-restore
+        dotnet build ExifDateFixer.Tests/ExifDateFixer.Tests.csproj --configuration ${{ matrix.configuration }} --no-restore
+
+    - name: Run tests
+      run: dotnet test ExifDateFixer.Tests/ExifDateFixer.Tests.csproj --configuration ${{ matrix.configuration }} --no-build --verbosity normal
