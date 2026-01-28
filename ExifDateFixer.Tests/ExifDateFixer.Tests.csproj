@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExifDateFixer.csproj" />
+    <ProjectReference Include="..\ExifDateFixer.Core\ExifDateFixer.Core.csproj" />
   </ItemGroup>
 
 </Project>

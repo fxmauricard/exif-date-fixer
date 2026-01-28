@@ -16,11 +16,48 @@ namespace ExifDateFixer
         private readonly List<IFilenameDateParser> _parsers;
         private readonly string[] _supportedExtensions;
 
+        /// <summary>
+        /// Event raised when progress is made during processing
+        /// </summary>
+        public event EventHandler<ProgressEventArgs> ProgressChanged;
+
         public FileProcessor(ExifService exifService, IEnumerable<IFilenameDateParser> parsers, IEnumerable<string> supportedExtensions)
         {
             _exifService = exifService;
             _parsers = parsers.ToList();
             _supportedExtensions = supportedExtensions.ToArray();
+        }
+
+        /// <summary>
+        /// Raises the ProgressChanged event
+        /// </summary>
+        protected virtual void OnProgressChanged(ProgressEventArgs e)
+        {
+            ProgressChanged?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Processes multiple files with progress reporting
+        /// </summary>
+        /// <param name="files">List of files to process</param>
+        /// <param name="dryRun">If true, simulates processing without modifying files</param>
+        public void ProcessFiles(List<string> files, bool dryRun = false)
+        {
+            for (int i = 0; i < files.Count; i++)
+            {
+                var file = files[i];
+                var filename = Path.GetFileName(file);
+                var result = ProcessFile(file, dryRun);
+
+                OnProgressChanged(new ProgressEventArgs
+                {
+                    FilePath = file,
+                    FileName = filename,
+                    CurrentFile = i + 1,
+                    TotalFiles = files.Count,
+                    Result = result
+                });
+            }
         }
 
         /// <summary>
@@ -53,7 +90,9 @@ namespace ExifDateFixer
         /// <summary>
         /// Processes a single file
         /// </summary>
-        public ProcessingResult ProcessFile(string filePath)
+        /// <param name="filePath">Path to the file to process</param>
+        /// <param name="dryRun">If true, simulates processing without modifying files</param>
+        public ProcessingResult ProcessFile(string filePath, bool dryRun = false)
         {
             try
             {
@@ -87,6 +126,18 @@ namespace ExifDateFixer
                     {
                         Status = ProcessingStatus.SkippedNoDateInFilename,
                         Message = "Could not parse date from filename"
+                    };
+                }
+
+                // In dry-run mode, don't actually write
+                if (dryRun)
+                {
+                    return new ProcessingResult
+                    {
+                        Status = ProcessingStatus.WouldUpdate,
+                        Message = $"Would add EXIF date {parsedDate:yyyy-MM-dd HH:mm:ss}",
+                        ParsedDate = parsedDate,
+                        ParserUsed = successfulParser.Name
                     };
                 }
 
@@ -138,8 +189,21 @@ namespace ExifDateFixer
     public enum ProcessingStatus
     {
         Updated,
+        WouldUpdate,
         SkippedHasDate,
         SkippedNoDateInFilename,
         Error
+    }
+
+    /// <summary>
+    /// Event args for progress reporting
+    /// </summary>
+    public class ProgressEventArgs : EventArgs
+    {
+        public string FilePath { get; set; }
+        public string FileName { get; set; }
+        public int CurrentFile { get; set; }
+        public int TotalFiles { get; set; }
+        public ProcessingResult Result { get; set; }
     }
 }
